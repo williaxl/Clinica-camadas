@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Clínica Odontológica</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div id="app" class="container">
+        <!-- Página de Login -->
+        <div id="loginPage" class="page">
+            <div class="login-container">
+                <h1>🦷 Clínica Odontológica</h1>
+                <form id="loginForm">
+                    <h2>Login</h2>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="senha">Senha:</label>
+                        <input type="password" id="senha" name="senha" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Entrar</button>
+                    <p class="toggle-form">Não tem conta? <a href="#" onclick="document.getElementById('loginForm').style.display='none'; document.getElementById('registerForm').style.display='block';">Cadastre-se</a></p>
+                </form>
+
+                <form id="registerForm" style="display:none;">
+                    <h2>Cadastro</h2>
+                    <div class="form-group">
+                        <label for="regNome">Nome Completo:</label>
+                        <input type="text" id="regNome" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regEmail">Email:</label>
+                        <input type="email" id="regEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regSenha">Senha:</label>
+                        <input type="password" id="regSenha" name="senha" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tipoUsuario">Tipo de Usuário:</label>
+                        <select id="tipoUsuario" name="tipo_usuario" required>
+                            <option value="">Selecione...</option>
+                            <option value="dentista">Dentista</option>
+                            <option value="secretaria">Secretária</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Cadastrar</button>
+                    <p class="toggle-form">Já tem conta? <a href="#" onclick="document.getElementById('registerForm').style.display='none'; document.getElementById('loginForm').style.display='block';">Faça login</a></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Principal -->
+        <div id="dashboardPage" class="page" style="display:none;">
+            <nav class="navbar"></nav>
+
+            <div class="content">
+                <!-- Dashboard -->
+                <section id="dashboard" class="section">
+                    <h2>📊 Dashboard</h2>
+                    <div id="dashboardStatsContainer"></div>
+                </section>
+
+                <!-- Pacientes -->
+                <section id="pacientes" class="section" style="display:none;">
+                    <h2>👥 Pacientes</h2>
+                    <button class="btn btn-primary" onclick="app.showModalPaciente()">+ Novo Paciente</button>
+                    <div id="pacientesTableContainer"></div>
+                </section>
+
+                <!-- Consultas -->
+                <section id="consultas" class="section" style="display:none;">
+                    <h2>📅 Consultas</h2>
+                    <button class="btn btn-primary" onclick="app.showModalConsulta()">+ Nova Consulta</button>
+                    <div id="consultasTableContainer"></div>
+                </section>
+
+                <!-- Prontuários -->
+                <section id="prontuarios" class="section" style="display:none;">
+                    <h2>📋 Prontuários</h2>
+                    <button class="btn btn-primary" onclick="app.showModalProntuario()">+ Novo Prontuário</button>
+                    <div id="prontuariosTableContainer"></div>
+                </section>
+
+                <!-- Pagamentos -->
+                <section id="pagamentos" class="section" style="display:none;">
+                    <h2>💰 Controle Financeiro</h2>
+                    <button class="btn btn-primary" onclick="app.showModalPagamento()">+ Novo Pagamento</button>
+                    <div id="pagamentosTableContainer"></div>
+                    <div class="relatorio-financeiro" id="resumoFinanceiro"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts - Ordem importante! -->
+    <script src="services/api.js"></script>
+    <script src="services/auth.js"></script>
+    <script src="services/utils.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
