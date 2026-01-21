@@ -1,48 +1,47 @@
-const pool = require('../config/database');
+const { query, queryOne } = require('../config/sqlite-helper');
 
 class UsuarioRepository {
   async criarUsuario(nome, email, senhaHash, tipoUsuario) {
-    const query = `
+    const sql = `
       INSERT INTO usuarios (nome, email, senha, tipo_usuario)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id, nome, email, tipo_usuario
+      VALUES (?, ?, ?, ?)
     `;
-    const result = await pool.query(query, [nome, email, senhaHash, tipoUsuario]);
-    return result.rows[0];
+    const result = await query(sql, [nome, email, senhaHash, tipoUsuario]);
+    if (result.lastID) {
+      return { id: result.lastID, nome, email, tipo_usuario: tipoUsuario };
+    }
+    return null;
   }
 
   async buscarPorEmail(email) {
-    const query = 'SELECT * FROM usuarios WHERE email = $1';
-    const result = await pool.query(query, [email]);
-    return result.rows[0];
+    const sql = 'SELECT * FROM usuarios WHERE email = ?';
+    return await queryOne(sql, [email]);
   }
 
   async buscarPorId(id) {
-    const query = 'SELECT id, nome, email, tipo_usuario, ativo FROM usuarios WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return result.rows[0];
+    const sql = 'SELECT id, nome, email, tipo_usuario, ativo FROM usuarios WHERE id = ?';
+    return await queryOne(sql, [id]);
   }
 
   async listarTodos() {
-    const query = 'SELECT id, nome, email, tipo_usuario, ativo, criado_em FROM usuarios';
-    const result = await pool.query(query);
+    const sql = 'SELECT id, nome, email, tipo_usuario, ativo, criado_em FROM usuarios';
+    const result = await query(sql);
     return result.rows;
   }
 
   async atualizar(id, nome, email) {
-    const query = `
+    const sql = `
       UPDATE usuarios 
-      SET nome = $2, email = $3, atualizado_em = CURRENT_TIMESTAMP
-      WHERE id = $1
-      RETURNING id, nome, email, tipo_usuario
+      SET nome = ?, email = ?, atualizado_em = CURRENT_TIMESTAMP
+      WHERE id = ?
     `;
-    const result = await pool.query(query, [id, nome, email]);
-    return result.rows[0];
+    const result = await query(sql, [nome, email, id]);
+    return { id, nome, email, tipo_usuario: null };
   }
 
   async deletar(id) {
-    const query = 'DELETE FROM usuarios WHERE id = $1';
-    await pool.query(query, [id]);
+    const sql = 'DELETE FROM usuarios WHERE id = ?';
+    await query(sql, [id]);
   }
 }
 

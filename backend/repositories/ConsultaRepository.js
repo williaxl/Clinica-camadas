@@ -1,77 +1,77 @@
-const pool = require('../config/database');
+const { query, queryOne } = require('../config/sqlite-helper');
 
 class ConsultaRepository {
   async criar(pacienteId, dentistaId, dataConsulta, horaConsulta, status = 'agendada', observacoes = '') {
-    const query = `
+    const sql = `
       INSERT INTO consultas (paciente_id, dentista_id, data_consulta, hora_consulta, status, observacoes)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING *
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
-    const result = await pool.query(query, [pacienteId, dentistaId, dataConsulta, horaConsulta, status, observacoes]);
-    return result.rows[0];
+    const result = await query(sql, [pacienteId, dentistaId, dataConsulta, horaConsulta, status, observacoes]);
+    if (result.lastID) {
+      return { id: result.lastID, paciente_id: pacienteId, dentista_id: dentistaId, data_consulta: dataConsulta, hora_consulta: horaConsulta, status, observacoes };
+    }
+    return null;
   }
 
   async buscarPorId(id) {
-    const query = `
+    const sql = `
       SELECT c.*, p.nome as paciente_nome, d.id as dentista_id
       FROM consultas c
       JOIN pacientes p ON c.paciente_id = p.id
       JOIN dentistas d ON c.dentista_id = d.id
-      WHERE c.id = $1
+      WHERE c.id = ?
     `;
-    const result = await pool.query(query, [id]);
-    return result.rows[0];
+    return await queryOne(sql, [id]);
   }
 
   async listarPorData(data) {
-    const query = `
+    const sql = `
       SELECT c.*, p.nome as paciente_nome
       FROM consultas c
       JOIN pacientes p ON c.paciente_id = p.id
-      WHERE DATE(c.data_consulta) = $1
+      WHERE DATE(c.data_consulta) = ?
       ORDER BY c.hora_consulta
     `;
-    const result = await pool.query(query, [data]);
+    const result = await query(sql, [data]);
     return result.rows;
   }
 
   async listarPorPaciente(pacienteId) {
-    const query = `
+    const sql = `
       SELECT c.*, p.nome as paciente_nome
       FROM consultas c
       JOIN pacientes p ON c.paciente_id = p.id
-      WHERE c.paciente_id = $1
+      WHERE c.paciente_id = ?
       ORDER BY c.data_consulta DESC
     `;
-    const result = await pool.query(query, [pacienteId]);
+    const result = await query(sql, [pacienteId]);
     return result.rows;
   }
 
   async listarTodas() {
-    const query = `
+    const sql = `
       SELECT c.*, p.nome as paciente_nome
       FROM consultas c
       JOIN pacientes p ON c.paciente_id = p.id
       ORDER BY c.data_consulta DESC
     `;
-    const result = await pool.query(query);
+    const result = await query(sql);
     return result.rows;
   }
 
   async atualizar(id, dataConsulta, horaConsulta, status, observacoes) {
-    const query = `
+    const sql = `
       UPDATE consultas 
-      SET data_consulta = $2, hora_consulta = $3, status = $4, observacoes = $5, atualizado_em = CURRENT_TIMESTAMP
-      WHERE id = $1
-      RETURNING *
+      SET data_consulta = ?, hora_consulta = ?, status = ?, observacoes = ?, atualizado_em = CURRENT_TIMESTAMP
+      WHERE id = ?
     `;
-    const result = await pool.query(query, [id, dataConsulta, horaConsulta, status, observacoes]);
-    return result.rows[0];
+    await query(sql, [dataConsulta, horaConsulta, status, observacoes, id]);
+    return { id, data_consulta: dataConsulta, hora_consulta: horaConsulta, status, observacoes };
   }
 
   async deletar(id) {
-    const query = 'DELETE FROM consultas WHERE id = $1';
-    await pool.query(query, [id]);
+    const sql = 'DELETE FROM consultas WHERE id = ?';
+    await query(sql, [id]);
   }
 }
 

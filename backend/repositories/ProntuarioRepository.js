@@ -1,42 +1,41 @@
-const pool = require('../config/database');
+const { query, queryOne } = require('../config/sqlite-helper');
 
 class ProntuarioRepository {
   async criar(pacienteId, historicoTratamentos = '', evolucoes = '', alergias = '', observacoes = '') {
-    const query = `
+    const sql = `
       INSERT INTO prontuarios (paciente_id, historico_tratamentos, evolucoes, alergias, observacoes)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *
+      VALUES (?, ?, ?, ?, ?)
     `;
-    const result = await pool.query(query, [pacienteId, historicoTratamentos, evolucoes, alergias, observacoes]);
-    return result.rows[0];
+    const result = await query(sql, [pacienteId, historicoTratamentos, evolucoes, alergias, observacoes]);
+    if (result.lastID) {
+      return { id: result.lastID, paciente_id: pacienteId, historico_tratamentos: historicoTratamentos, evolucoes, alergias, observacoes };
+    }
+    return null;
   }
 
   async buscarPorPacienteId(pacienteId) {
-    const query = 'SELECT * FROM prontuarios WHERE paciente_id = $1';
-    const result = await pool.query(query, [pacienteId]);
-    return result.rows[0];
+    const sql = 'SELECT * FROM prontuarios WHERE paciente_id = ?';
+    return await queryOne(sql, [pacienteId]);
   }
 
   async buscarPorId(id) {
-    const query = 'SELECT * FROM prontuarios WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return result.rows[0];
+    const sql = 'SELECT * FROM prontuarios WHERE id = ?';
+    return await queryOne(sql, [id]);
   }
 
   async atualizar(id, historicoTratamentos, evolucoes, alergias, observacoes) {
-    const query = `
+    const sql = `
       UPDATE prontuarios 
-      SET historico_tratamentos = $2, evolucoes = $3, alergias = $4, observacoes = $5, atualizado_em = CURRENT_TIMESTAMP
-      WHERE id = $1
-      RETURNING *
+      SET historico_tratamentos = ?, evolucoes = ?, alergias = ?, observacoes = ?, atualizado_em = CURRENT_TIMESTAMP
+      WHERE id = ?
     `;
-    const result = await pool.query(query, [id, historicoTratamentos, evolucoes, alergias, observacoes]);
-    return result.rows[0];
+    await query(sql, [historicoTratamentos, evolucoes, alergias, observacoes, id]);
+    return { id, historico_tratamentos: historicoTratamentos, evolucoes, alergias, observacoes };
   }
 
   async deletar(id) {
-    const query = 'DELETE FROM prontuarios WHERE id = $1';
-    await pool.query(query, [id]);
+    const sql = 'DELETE FROM prontuarios WHERE id = ?';
+    await query(sql, [id]);
   }
 }
 

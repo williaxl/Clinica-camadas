@@ -67,7 +67,7 @@ Sistema web completo para gerenciamento de clínica odontológica com **arquitet
 ### Backend
 - **Node.js 14+** - Runtime JavaScript
 - **Express 4.18+** - Framework web minimalista
-- **PostgreSQL 12+** - Banco de dados relacional
+- **SQLite3 5.1+** - Banco de dados relacional (arquivo local)
 - **bcryptjs 2.4+** - Hash de senhas
 - **jsonwebtoken 9.0.2** - Autenticação JWT
 - **CORS 2.8+** - Requisições cross-origin
@@ -88,8 +88,10 @@ Clinica-camadas/
 │
 ├── backend/
 │   ├── config/
-│   │   ├── database.js        # Configuração PostgreSQL
-│   │   └── schema.sql         # Criação de tabelas
+│   │   ├── database.js        # Configuração SQLite3
+│   │   ├── init-db.js         # Script de inicialização
+│   │   ├── schema.sql         # Criação de tabelas
+│   │   └── sqlite-helper.js   # Helper para promises
 │   ├── controllers/           # Recebem requisições HTTP
 │   │   ├── UsuarioController.js
 │   │   ├── PacienteController.js
@@ -159,8 +161,9 @@ Clinica-camadas/
 
 ### Pré-requisitos
 - Node.js 14+
-- PostgreSQL 12+
 - Git
+
+⚠️ **SQLite3 não precisa de instalação separada** - o arquivo `backend/clinica.db` é criado automaticamente!
 
 ### 1️⃣ Configurar Backend
 
@@ -171,26 +174,20 @@ cd backend
 # Instalar dependências
 npm install
 
-# Criar banco de dados PostgreSQL
-createdb clinica_db
-
-# Executar script de criação de tabelas
-psql -U postgres -d clinica_db -f config/schema.sql
+# Inicializar banco de dados SQLite3
+node config/init-db.js
 
 # Configurar .env
 cat > .env << 'ENV'
 PORT=5000
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=clinica_db
 JWT_SECRET=seu_secret_key_muito_seguro_aqui
 ENV
 
 # Iniciar servidor
 npm start
 ```
+
+✅ **Banco de dados criado automaticamente em `backend/clinica.db`**
 
 O backend rodará em: **http://localhost:5000**
 

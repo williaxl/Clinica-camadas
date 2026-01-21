@@ -1,16 +1,20 @@
-const { Pool } = require('pg');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 require('dotenv').config();
 
-const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'clinica_db'
+// Caminho do banco de dados
+const dbPath = path.join(__dirname, '..', 'clinica.db');
+
+// Criar/conectar ao banco de dados
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('Erro ao conectar ao SQLite:', err.message);
+  } else {
+    console.log('✅ Conectado ao SQLite em:', dbPath);
+  }
 });
 
-pool.on('error', (err) => {
-  console.error('Erro inesperado no pool', err);
-});
+// Habilitar foreign keys
+db.run('PRAGMA foreign_keys = ON');
 
-module.exports = pool;
+module.exports = db;

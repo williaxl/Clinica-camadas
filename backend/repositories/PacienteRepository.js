@@ -1,48 +1,47 @@
-const pool = require('../config/database');
+const { query, queryOne } = require('../config/sqlite-helper');
 
 class PacienteRepository {
   async criar(nome, cpf, dataNascimento, telefone, endereco, email) {
-    const query = `
+    const sql = `
       INSERT INTO pacientes (nome, cpf, data_nascimento, telefone, endereco, email)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING *
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
-    const result = await pool.query(query, [nome, cpf, dataNascimento, telefone, endereco, email]);
-    return result.rows[0];
+    const result = await query(sql, [nome, cpf, dataNascimento, telefone, endereco, email]);
+    if (result.lastID) {
+      return { id: result.lastID, nome, cpf, data_nascimento: dataNascimento, telefone, endereco, email };
+    }
+    return null;
   }
 
   async buscarPorId(id) {
-    const query = 'SELECT * FROM pacientes WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return result.rows[0];
+    const sql = 'SELECT * FROM pacientes WHERE id = ?';
+    return await queryOne(sql, [id]);
   }
 
   async listarTodos() {
-    const query = 'SELECT * FROM pacientes ORDER BY nome';
-    const result = await pool.query(query);
+    const sql = 'SELECT * FROM pacientes ORDER BY nome';
+    const result = await query(sql);
     return result.rows;
   }
 
   async buscarPorCPF(cpf) {
-    const query = 'SELECT * FROM pacientes WHERE cpf = $1';
-    const result = await pool.query(query, [cpf]);
-    return result.rows[0];
+    const sql = 'SELECT * FROM pacientes WHERE cpf = ?';
+    return await queryOne(sql, [cpf]);
   }
 
   async atualizar(id, nome, cpf, dataNascimento, telefone, endereco, email) {
-    const query = `
+    const sql = `
       UPDATE pacientes 
-      SET nome = $2, cpf = $3, data_nascimento = $4, telefone = $5, endereco = $6, email = $7, atualizado_em = CURRENT_TIMESTAMP
-      WHERE id = $1
-      RETURNING *
+      SET nome = ?, cpf = ?, data_nascimento = ?, telefone = ?, endereco = ?, email = ?, atualizado_em = CURRENT_TIMESTAMP
+      WHERE id = ?
     `;
-    const result = await pool.query(query, [id, nome, cpf, dataNascimento, telefone, endereco, email]);
-    return result.rows[0];
+    await query(sql, [nome, cpf, dataNascimento, telefone, endereco, email, id]);
+    return { id, nome, cpf, data_nascimento: dataNascimento, telefone, endereco, email };
   }
 
   async deletar(id) {
-    const query = 'DELETE FROM pacientes WHERE id = $1';
-    await pool.query(query, [id]);
+    const sql = 'DELETE FROM pacientes WHERE id = ?';
+    await query(sql, [id]);
   }
 }
 
